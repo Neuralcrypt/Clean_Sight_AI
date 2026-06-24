@@ -63,8 +63,7 @@ def plot_histograms(df: pd.DataFrame, max_cols: int = 6):
 
     fig = px.histogram(df, x=numeric_cols[0], nbins=30, marginal="box", title=f"Histogram: {numeric_cols[0]}")
 
-    # If more columns exist, add as subplots would require more boilerplate.
-    # For beginner-friendly UI, one primary histogram is shown.
+   
     return fig
 
 
