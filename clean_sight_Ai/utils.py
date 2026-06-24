@@ -64,11 +64,11 @@ def try_convert_numeric_series(s: pd.Series) -> pd.Series:
     if not (s.dtype == "object" or pd.api.types.is_string_dtype(s.dtype)):
         return s
 
-    # Normalize common missing markers
+   
     s2 = s.copy()
     s2 = s2.replace({"": np.nan, "nan": np.nan, "NaN": np.nan, "NULL": np.nan, "null": np.nan})
 
-    # Only attempt conversion if values look numeric often enough
+
     sample = s2.dropna().astype(str)
     if sample.empty:
         return s
@@ -78,7 +78,7 @@ def try_convert_numeric_series(s: pd.Series) -> pd.Series:
         return s
 
     converted = pd.to_numeric(s2, errors="coerce")
-    # If conversion produced a lot of non-nulls, keep it
+   
     if converted.notna().mean() >= 0.7:
         return converted
     return s
@@ -97,7 +97,7 @@ def try_parse_datetime_series(s: pd.Series) -> pd.Series:
     if sample.empty:
         return s
 
-    # Heuristic: presence of typical datetime patterns
+   
     looks_like = sample.head(50).str.contains(r"\d{4}[-/]\d{1,2}[-/]\d{1,2}").mean()
     looks_like = looks_like or sample.head(50).str.contains(r"\d{1,2}[-/]\d{1,2}[-/]\d{2,4}").mean()
 
@@ -169,10 +169,10 @@ def compute_health_score(before: Dict[str, Any], after: Dict[str, Any]) -> Tuple
         dup_ratio = min(dup_rows / rows, 1.0)
 
         outliers = float(metrics.get("outliers", 0.0))
-        # outliers is an absolute count across numeric columns
+       
         outlier_ratio = min(outliers / max(total_cells, 1), 1.0)
 
-        # Convert to rewards/penalties
+       
         penalty = 0.45 * missing_ratio + 0.25 * dup_ratio + 0.30 * outlier_ratio
         s = int(round(100 * (1.0 - penalty)))
         return int(max(0, min(100, s)))
