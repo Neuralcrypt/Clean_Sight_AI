@@ -189,7 +189,7 @@ def encode_categoricals(
     numeric_cols = out.select_dtypes(include=["number"]).columns.tolist()
     cat_cols = [c for c in out.columns if c not in numeric_cols]
 
-    # If high cardinality, recommend limiting; here we keep it simple.
+   
     selected_cat_cols = [c for c in cat_cols if out[c].nunique(dropna=True) <= max_cardinality_for_encoding]
     dropped_cat_cols = [c for c in cat_cols if c not in selected_cat_cols]
 
@@ -199,12 +199,11 @@ def encode_categoricals(
         le_models: Dict[str, LabelEncoder] = {}
         for c in selected_cat_cols:
             le = LabelEncoder()
-            # Convert NaNs to string label
+            
             out[c] = out[c].astype(str).fillna("__missing__")
             out[c] = le.fit_transform(out[c])
             le_models[c] = le
-        # Drop columns not encoded (keep as object)
-        # For simplicity: keep them but label-encode them as well if possible
+       
         for c in dropped_cat_cols:
             le = LabelEncoder()
             out[c] = out[c].astype(str).fillna("__missing__")
@@ -212,10 +211,10 @@ def encode_categoricals(
             le_models[c] = le
 
     elif method == "onehot":
-        # Use OneHotEncoder for selected cat columns; rest are label-encoded.
+       
         if selected_cat_cols:
             enc = OneHotEncoder(handle_unknown="ignore", sparse_output=False)
-            # Replace NaNs
+            
             cat_data = out[selected_cat_cols].astype(str).fillna("__missing__")
             encoded = enc.fit_transform(cat_data)
             feature_names = enc.get_feature_names_out(selected_cat_cols)
@@ -224,7 +223,7 @@ def encode_categoricals(
             out = out.drop(columns=selected_cat_cols)
             out = pd.concat([out, encoded_df], axis=1)
 
-        # For dropped high-cardinality cat columns: label encode them to keep pipeline running.
+      
         for c in dropped_cat_cols:
             le = LabelEncoder()
             out[c] = out[c].astype(str).fillna("__missing__")
@@ -292,7 +291,7 @@ def apply_preprocessing_pipeline(
         out, out_details = remove_or_cap_outliers(out, mode=outlier_action, factor=iqr_factor)
         details["outlier_handling"] = out_details
 
-    # Encoding + scaling happen after missing/outlier handling.
+   
     out, enc_details = encode_categoricals(out, method=encoding_method)
     details["categorical_encoding"] = enc_details
 
