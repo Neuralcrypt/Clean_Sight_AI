@@ -22,7 +22,7 @@ st.set_page_config(
     layout="wide",
 )
 
-# ---------- Black & White professional theme ----------
+
 st.markdown(
     """
     <style>
@@ -130,7 +130,7 @@ def main():
     st.title("🧹 CleanSight AI")
     st.caption("Upload a dataset, clean it automatically, visualize results, and download an ML-ready CSV.")
 
-    # Sidebar controls
+  
     with st.sidebar:
         st.header("Cleaning Controls")
 
@@ -162,7 +162,7 @@ def main():
 
         run_button = st.button("Run Cleaning", type="primary")
 
-    # Upload section
+  
     upload = st.file_uploader("Upload CSV or XLSX", type=["csv", "xlsx", "xls"], accept_multiple_files=False)
 
     if not upload:
@@ -179,7 +179,7 @@ def main():
         st.error("Uploaded file contains no data.")
         return
 
-    # Display upload preview
+
     st.success("Dataset uploaded successfully!")
 
     st.subheader("Preview")
@@ -192,10 +192,7 @@ def main():
         st.metric("Rows", df_raw.shape[0])
         st.metric("Columns", df_raw.shape[1])
 
-    # Target column selector is defined after dataset load.
-
-
-    # Profiling dashboard
+  
     st.header("📊 Dataset Profiling Dashboard")
 
     profile = profile_dataframe(df_raw)
@@ -213,8 +210,7 @@ def main():
     st.write("**Data Types Summary**")
     st.json(profile["dtypes_summary"])
 
-    # Determine target dropdown options (after data is known)
-    # Note: Streamlit reruns; we keep it simple by using a stable key.
+    
     st.sidebar.subheader("Target Column")
     target_col = st.sidebar.selectbox(
         "(Optional) Target column",
@@ -226,7 +222,7 @@ def main():
         target_col = None
 
 
-    # Tabs for visualization and report
+   
     tab_overview, tab_missing, tab_vis, tab_report, tab_download = st.tabs(
         ["Overview", "Missing Values", "Visualizations", "Data Quality Report", "Download"]
     )
@@ -248,14 +244,13 @@ def main():
     with tab_missing:
         st.plotly_chart(plot_missing_values_bar(df_raw), use_container_width=True)
 
-    # Execute cleaning when user clicks
+    
     df_clean = None
     health_before = None
     health_after = None
     outlier_counts_before = None
 
-    # Compute outliers before for report (preview only)
-    # Lightweight: run within cleaning later if needed; for health we re-use by running after.
+    
 
     if run_button:
         with st.spinner("Running cleaning pipeline..."):
@@ -280,14 +275,14 @@ def main():
                 st.error(f"Cleaning failed: {e}")
                 return
 
-        # Outlier counts after cleaning (approx) for health report
+        
         from preprocessing import detect_outliers_iqr
 
 
         outlier_before = detect_outliers_iqr(df_raw)
         outlier_after = detect_outliers_iqr(df_clean)
 
-        # Health score (0-100)
+       
         before_score, after_score = compute_health_score(
             before=dataset_metrics_for_report(df_raw, outlier_counts=outlier_before.outlier_counts),
             after=dataset_metrics_for_report(df_clean, outlier_counts=outlier_after.outlier_counts),
@@ -298,7 +293,7 @@ def main():
         st.write("**Preview of Cleaned Data**")
         st.dataframe(df_clean.head(10), use_container_width=True)
 
-        # Health report
+       
         with tab_report:
             st.metric("Before Score", before_score)
             st.metric("After Score", after_score)
@@ -315,7 +310,7 @@ def main():
                 "outliers": int(sum(outlier_after.outlier_counts.values())),
             })
 
-        # Visualizations
+       
         with tab_vis:
             st.plotly_chart(plot_missing_values_bar(df_clean), use_container_width=True, key="vis_missing")
             st.plotly_chart(plot_correlation_heatmap(df_clean), use_container_width=True, key="vis_corr")
@@ -324,7 +319,7 @@ def main():
             st.plotly_chart(plot_target_distribution(df_clean, target_col), use_container_width=True, key="vis_target")
 
 
-        # Download
+       
         with tab_download:
             st.write("Ready to download cleaned dataset.")
             output_path = os.path.join("outputs", f"auto_cleaned_{os.path.splitext(upload.name)[0]}.csv")
